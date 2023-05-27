@@ -255,17 +255,17 @@ undefined
 
 #### addeventListener
 
-`addEventListener` 方法将指定的监听器注册到 EventTarget 上，当该对象触发指定的事件时，指定的回调函数就会被执行
+`addEventListener` 方法将指定的监听器注册到 EventTarget 上, 当该对象触发指定的事件时, 指定的回调函数就会被执行
 `addEventListener` 事件目标可以是文档上的元素 Element、Document 和 Window 或者任何其他支持事件的对象(例如 XMLHttpRequest)
 
 语法: target.addEventListener(type, listener, options/useCapture)
 
 - type: 表示监听事件类型的字符串
-- listener: 所监听的事件触发，会接受一个事件通知方法
+- listener: 所监听的事件触发, 会接受一个事件通知方法
 - options: 一个指定有关 listener 属性的可选参数对象。可选值有 capture (事件捕获阶段传播到这里触发) 、once (在 listener 添加之后最多值调用一次) 、passive (设置为 true 时表示 listener 永远不会调用 preventDefault())
-- useCapture: 在 DOM 树中，注册了 listener 的元素，是否要先于它下面的 EventTarget 调用该 listener (先就是捕获, 后就是冒泡)
+- useCapture: 在 DOM 树中, 注册了 listener 的元素, 是否要先于它下面的 EventTarget 调用该 listener (先就是捕获, 后就是冒泡)
 
-> addEventListener 的第三个参数涉及到冒泡和捕获，为 true 时是捕获，为 false 时是冒泡 {capture: true/false} / useCapture: true/ false 默认是冒泡
+> addEventListener 的第三个参数涉及到冒泡和捕获, 为 true 时是捕获, 为 false 时是冒泡 {capture: true/false} / useCapture: true/ false 默认是冒泡
 
 #### 阻止冒泡
 
@@ -274,4 +274,163 @@ event.stopPropagation; // 方法阻止捕获和冒泡阶段中当前事件的进
 
 // ie9
 e.cancelBubble = true; // ie 下阻止冒泡
+```
+
+### this
+
+对于函数而言, 指向最后调用函数的那个对象, 是函数运行时内部自动生成的一个内部对象, 只能在函数内部使用；对于全局而言, this 指向 window
+
+### 模块规范化
+
+没有模块化之前都有啥问题:
+
+- 代码维护成本高, 一个 js 文件几千上万行代码
+- 全局变量空间污染, 容易被篡改
+- iife 虽然有着自己的作用域, iife 如果依赖别的, 我们还需要把别的 依赖的作为参数传进来, 这么做而且我们还需要明确 依赖顺序, 依赖过多, 渲染性能也是问题
+
+有了模块化之后:
+
+- 能够把我们的代码拆分成不同的功能模块独立成文件, 并且可以被其他模块引用
+- 外部不能直接访问模块内的变量, 仅能通过模块暴露的方法或者变量访问
+- 模块内的依赖对引用者来说是透明的
+- 依赖简单好维护管理
+
+然后就有了 `CommonJS`, `AMD`, `CMD`, `UMD`, `ES Modules`
+
+#### CommonJS
+
+- 导出: `module.exports = {}、exports.xxx = 'xxx'`
+- 导入: `require(./index.js)`
+- 查找方式: `查找当前目录是否具有文件, 没有则查找当前目录的 node_modules 文件. 再没有, 冒泡查询, 一直往系统中的 npm 目录查找`
+
+**特点**
+
+- 所有代码在模块作用域内运行, 不会污染其他文件
+- require 得到的值是值的拷贝, 即你引用其他 JS 文件的变量, 修改操作了也不会影响其他文件
+- 文件可以被重复引用、加载. 第一次加载时会被缓存, 之后再引用就直接读取缓存
+
+**缺陷**
+
+- 应用层面: 在 index.html 中做 var index = require('./index.js') 操作报错, 因为它最终是后台执行的, 只能是 index.js 引用 index2.js 这种方式
+- 同步加载问题: CommonJS 规范中模块是同步加载的, 即在 index.js 中加载 index2.js, 如果 index2.js 卡住了, 那就要等很久
+
+在每个模块内部有一个 module 对象, 代表当前模块, 通过它来导出当前模块里的 API, module 有几个属性:
+
+- exports: 是对外的接口, 加载某个模块, 就是加载该模块的 module.exports 属性
+- loaded: 返回一个布尔值, 表示该模块是否已完成加载
+- parent: 返回一个对象, 表示调用该模块的模块
+- children: 返回一个数组, 表示该模块被用到了其他模块的集合
+- filename: 模块的文件名, 带有绝对路径
+- id: 模块的标识符, 一般是带有绝对路径的模块文件名
+
+#### AMD(Asynchronous Module Definiton)
+
+和 `CommonJS` 一样都是模块化，只不过 `CommonJS` 规范加载模块是同步加载，只有加载完成，才能执行后面的操作，而 AMD 是异步加载模块，可以指定回调函数
+
+为啥会出现 `AMD`:
+
+因为 Node.js 运行在服务器上，所有的文件一般都存在本地硬盘里，不需要再去请求异步加载。可如果放在浏览器环境下，就需要去请求从服务器获取模块文件，这时如果再使用同步加载显然就不合适了，所以才有了完全贴合浏览器的 AMD 规范，该规范的实现就是 `require.js`
+
+它的使用方法就是通过一个全局函数 `define`，把代码定义为模块，再用 `require` 方法加载模块
+
+```js
+/**
+ * 第一个是模块名称，也可以不填，默认就是文件名
+ * 第二个参数必须是一个数组，定义了该模块依赖的模块列表
+ * 第三个参数是模块初始化要执行的函数或对象. 如果是函数，只会被执行一次，如果是对象，那这个对象应该作为模块的输出值
+ */
+
+define('myModule', ['require', 'exports', 'beta'], function (
+  require,
+  exports,
+  beta,
+) {
+  exports.foo = function () {
+    return beat.foo();
+  };
+});
+
+// 导出
+module.exports = { ... }
+
+// 导入
+const foo = require("./xxx")
+```
+
+`requirejs` 会在模块方法调用前就加载并执行了
+
+#### CMD(Common Module Definition)
+
+`CMD` 规范整合了上面说的 CommonJS 规范和 AMD 规范的特点, CMD 规范的实现就是 `sea.js`
+
+`CMD` 规范最大的特点就是`懒加载`，不需要在定义模块的时候声明依赖，可以在模块执行时动态加载依赖，并且同时支持同步和异步加载模块
+
+`CMD` 和 `AMD` 的主要区别是:
+
+- AMD 需要异步加载模块，而 CMD 可以同步加载(require)，也可以异步加载(require.sync)
+- CMD 遵循依赖就近原则，AMD 遵循依赖前置原则。就是说在 AMD 中我们需要把模块需要的依赖都提前在依赖数组里声明，而在 CMD 里我们只需要在具体代码逻辑内，把需要使用的模块 require 进来就可以了
+
+用法和 require.js 差不多，通过定义一个全局函数 `define` 来实现，不过只能接受一个参数，可以是函数或者对象。如果是对象，模块导出的就是对象，如果是函数，那这个函数会被传入三个参数
+
+```js
+/**
+ * require：可以引用其他模块，也可以用 require.async 异步调用其他模块
+ * expxort：是一个对象，定义模块的时候，需要通过参数 export 添加属性来导出 API
+ * module：是一个对象，它有三个属性
+ *    uri： 模块完整的 URI 路径
+ *    dependencies：模块的依赖
+ *    exports：模块需要被导出的 API
+ */
+define(function (require, exports, module) {
+  const add = require('math').add;
+  exports.increment = function (val) {
+    return add(val, 1);
+  };
+  module.id = 'increment';
+});
+```
+
+#### UMD(Universal Module Definition)
+
+UMD 没有专门的规范，而是集合了上面说的三个规范于一身，它可以让我们在合适的环境选择合适的模块规范
+
+```js
+(function(root, factory){
+    if(typeof define === "function" && define.amd){ // 先判断支不支持 AMD (define 是否存在)，存在就使用 AMD 方式加载模块
+        define(["xxx"], factory)
+    }else if(typeof exports === "object"){ // 再判断支不支持 Node.js 模块格式(export 是否存在)，存在就用 Node.js 模块格式
+        module.exports = factory( require("xxx") )
+    }else{
+        root.returnExports = factory( root.xxx ) // 如果前两个都不存在，就将模块公开到全局，window 或 global
+    }
+}(this, ($) => {
+    return { ... }
+}))
+```
+
+#### ES Modules
+
+`CommonJS` 和 `AMD` 都是在`运行时确定依赖关系`, 也就是运行时加载, `CommonJS` 加载的是`值的拷贝`, 而 ESM 是在`编译时`确定依赖关系, 所有的加载都是`引用`, 这样做的好处就是可以执行静态分析和类型检查
+
+ESM 和 CommonJS 的区别:
+
+- ESM 都 import 是静态引入, CommonJS 的 require 是动态引入
+- ESM 是对模块的引用, 输出的是值的引用, 改变原来模块中的值引用的值也会发生改变, CommonJS 是对模块的拷贝, 修改原来模块的值不会影响导出的值
+- ESM 里面的 this 是 undefiend, CommonJS 里面的 this 指向该模块
+- ESM 是在编译时确定依赖关系, 而 CommonJS 是在运行时确定依赖关系
+- ESM 可以单独加载某个方法, CommonJS 加载就是整个模块
+- ESM 不能被重新赋值, CommonJS 可以重新赋值(改变 this 的指向)
+
+什么是静态引入? 什么是动态引入?
+
+```js
+// CommonJS / AMD 中动态引入的写法
+const foo = require(`all/${['f', 'o', 'o'].join('')}`);
+const foo = require('all/FOO'.toLowerCase());
+const foo = require((() => 'foo')());
+const foo = xx.get(require('foo'));
+
+// ES6 Module 中静态引入的写法
+import foo from 'xxxx/xxx';
+import { foo1, foo2 } from 'xxxx/xxx';
 ```
