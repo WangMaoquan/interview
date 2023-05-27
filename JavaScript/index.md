@@ -62,7 +62,7 @@ console.log(typeof bigInt); // bigint
 而 `null` 存储的 32 进制的 类型位 是 000, 这也就是 为啥 `typeof null === "object"` 的由来
 
 - `typeof 不会在 一个变量没有被声明时抛出错误, 但是 但在加入了块级作用域的 let 和 const 之后, 在其被声明之前对块中的 let 和 const 变量使用 typeof 会抛出一个 ReferenceError。块作用域变量在块的头部处于“暂存死区”, 直至其被初始化, 在这期间, 访问变量将会引发错误`
-- `typeof 操作符的优先级高于加法（+）等二进制操作符`
+- `typeof 操作符的优先级高于加法 (+) 等二进制操作符`
 
 ##### instanceof 运算符
 
@@ -183,6 +183,52 @@ let bigInt = 9007199254740991n;
 console.log(getObjectPrototype(bigInt)); // getObjectPrototype receive an object, but receive a bigint
 ```
 
+##### Object.prototype.toString
+
+```ts
+const getType = (value) => {
+  return Object.prototype.toString.call(value).slice(8, -1);
+};
+
+let str = '123';
+console.log(getType(str)); // String
+
+let num = 123;
+console.log(getType(num)); // Number
+
+let boo = true;
+console.log(getType(boo)); // Boolean
+
+let symbol = Symbol();
+console.log(getType(symbol)); // Symbol
+
+let val;
+console.log(getType(undefined)); // Undefined
+
+let emptyOb = null;
+console.log(getType(emptyOb)); // Null
+
+let obj = {};
+console.log(getType(obj)); // Object
+
+let arr = [];
+console.log(getType(arr)); // Array
+
+let reg = new RegExp('str');
+console.log(getType(reg)); // RegExp
+
+let fun = new Function();
+console.log(getType(fun)); // Function
+
+let date = new Date();
+console.log(getType(date)); // Date
+
+let bigInt = 9007199254740991n;
+console.log(getType(bigInt)); // BigInt
+```
+
+例子可以看出 完全可以 分辨
+
 ### null 和 undefined 区别
 
 null
@@ -200,3 +246,32 @@ undefined
 - 1 + undefiend 是一个 NaN
 
 ### 事件流
+
+什么是事件流: 从页面中接收事件的顺序, 有以下三个阶段
+
+- 事件捕获阶段
+- 处于目标阶段
+- 事件冒泡阶段
+
+#### addeventListener
+
+`addEventListener` 方法将指定的监听器注册到 EventTarget 上，当该对象触发指定的事件时，指定的回调函数就会被执行
+`addEventListener` 事件目标可以是文档上的元素 Element、Document 和 Window 或者任何其他支持事件的对象(例如 XMLHttpRequest)
+
+语法: target.addEventListener(type, listener, options/useCapture)
+
+- type: 表示监听事件类型的字符串
+- listener: 所监听的事件触发，会接受一个事件通知方法
+- options: 一个指定有关 listener 属性的可选参数对象。可选值有 capture (事件捕获阶段传播到这里触发) 、once (在 listener 添加之后最多值调用一次) 、passive (设置为 true 时表示 listener 永远不会调用 preventDefault())
+- useCapture: 在 DOM 树中，注册了 listener 的元素，是否要先于它下面的 EventTarget 调用该 listener (先就是捕获, 后就是冒泡)
+
+> addEventListener 的第三个参数涉及到冒泡和捕获，为 true 时是捕获，为 false 时是冒泡 {capture: true/false} / useCapture: true/ false 默认是冒泡
+
+#### 阻止冒泡
+
+```js
+event.stopPropagation; // 方法阻止捕获和冒泡阶段中当前事件的进一步传播
+
+// ie9
+e.cancelBubble = true; // ie 下阻止冒泡
+```
