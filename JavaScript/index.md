@@ -470,3 +470,25 @@ function throttle(fn, wait) {
   };
 }
 ```
+
+### new
+
+`new` 运算符做了那些事?
+
+1. 创建一个新的空对象 `{}`
+2. 将创建对象的 `__proto__` 指向 构造函数的原型对象`prototype`
+3. 调用构造函数并将 `this` 指向 新创建的对象
+4. 如果构造函数返回的值不是 `object/function` 则返回新创建的对象, 否则返回构造函数的返回值
+
+```js
+function myNew(Func, ...args) {
+  const r = Object.create(Func.prototype);
+  const res = Func.apply(r, args);
+  if (type res === "function" || (res !== null && typeof res === "object")) {
+    return res;
+  }
+  return r;
+}
+```
+
+### bind

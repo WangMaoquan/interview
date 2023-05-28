@@ -10,6 +10,16 @@
     <!-- <script src="./typeof.js"></script> -->
     <!-- <script src="./instanceof.js"></script> -->
     <!-- <script src="./prototype.js"></script> -->
-    <script src="toString.js"></script>
+    <!-- <script src="toString.js"></script> -->
+    <script src="./new.js"></script>
+    <script>
+      function Test() {
+        return function (...args) {
+          console.log(args);
+        };
+      }
+      const t = myNew(Test);
+      console.log(t);
+    </script>
   </body>
 </html>
