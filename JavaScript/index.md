@@ -543,3 +543,34 @@ Function.prototype.myCall = function (context, ...args) {
   return r;
 };
 ```
+
+### apply
+
+apply(thisArg, [arg1, arg2, ....argn]) 方法使用指定的 `this` 值 及以一个数组（或一个类数组对象）的形式提供的参数
+
+thisArg 当函数处于 非严格模式的情况下, 指定 null 或者 undefined 时会替换成 全局对象, 使用原始值时会被包装
+
+```js
+const originConstructorMap = {
+  string: String,
+  number: Number,
+  boolean: Boolean,
+};
+
+const notUseNew = ['bigint', 'symbol'];
+
+Function.prototype.myApply = function (context, args = []) {
+  context = context || window;
+  const contextType = typeof context;
+  if (contextType !== 'object') {
+    context = notUseNew.includes(contextType)
+      ? Object(context)
+      : new originConstructorMap[contextType](context);
+  }
+  const key = Symbol();
+  context[key] = this;
+  const r = context[key](...args);
+  delete context[key];
+  return r;
+};
+```
