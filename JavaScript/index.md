@@ -434,3 +434,39 @@ const foo = xx.get(require('foo'));
 import foo from 'xxxx/xxx';
 import { foo1, foo2 } from 'xxxx/xxx';
 ```
+
+### 防抖与节流
+
+防抖(debounce), 节流(throttle) 都是防止某一时间频繁触发
+
+debounce(防抖): 触发后单位时间后 再去执行回调, 如果单位时间内重复触发, 则会重新计时, 直到再过一个单位的时间没有触发, 才会执行回调
+throttle(节流): 每单位时间, 只会执行一次回调
+
+```js
+function debounce(fn, wait) {
+  let timer = null;
+  return function (...args) {
+    const context = this;
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      fn.apply(context, args);
+    }, wait);
+  };
+}
+
+function throttle(fn, wait) {
+  let canRun = true;
+  return function (...args) {
+    const context = this;
+    if (!canRun) {
+      return;
+    }
+    setTimeout(() => {
+      fn.apply(context, args);
+      canRun = true;
+    }, wait);
+  };
+}
+```
