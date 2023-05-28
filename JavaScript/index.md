@@ -492,3 +492,23 @@ function myNew(Func, ...args) {
 ```
 
 ### bind
+
+bind 主要是返回一个 `新的方法`, 该方法的 `this` 是 bind 的第一个参数, bind 后续的参数作为 返回方法的 参数传入
+当返回 的方法 使用 `new ReturnFunc` 这么使用时, bind 的第一个参数无效
+
+```js
+Function.prototype.myBind = function (context, ...bindArgs) {
+  const fn = this; // 保存调用 myBind 的那个函数
+  const newFunc = function (...newFuncArgs) {
+    if (this instanceof newFunc) {
+      // 处理new
+      fn.apply(this, [...bindArgs, ...newFuncArgs]);
+    } else {
+      // 处理一般
+      fn.apply(context, [...bindArgs, ...newFuncArgs]);
+    }
+  };
+  newFunc.prototype = Object.create(fn.prototype);
+  return newFunc;
+};
+```
