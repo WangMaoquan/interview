@@ -685,3 +685,9 @@ console.log(testc);
 
 console.log(JSON.parse(JSON.stringify(testc))); // 忽略不可枚举的键, symbol 键, 丢失原型链
 ```
+
+### EventBus
+
+主要是处理 怎么存储对应的事件, 怎么去触发对应的事件
+
+EventBus 应该有这么几个方法 `on`, `emit`, `off` 这三个是最基本的
