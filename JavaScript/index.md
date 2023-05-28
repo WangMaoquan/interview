@@ -512,3 +512,34 @@ Function.prototype.myBind = function (context, ...bindArgs) {
   return newFunc;
 };
 ```
+
+### call
+
+call(thisArg, arg1, arg2, ....argn) 方法使用指定的 `this` 值和单独给出的一个或者多个参数来调用一个函数
+
+thisArg 当函数处于 非严格模式的情况下, 指定 null 或者 undefined 时会替换成 全局对象, 使用原始值时会被包装
+
+```js
+const originValueMap = {
+  string: String,
+  number: Number,
+  boolean: Boolean,
+};
+
+const notUseNew = ['bigint', 'symbol'];
+
+Function.prototype.myCall = function (context, ...args) {
+  context = context || window;
+  const contextType = typeof context;
+  if (contextType !== 'object') {
+    context = notUseNew.includes(contextType)
+      ? Object(context)
+      : new originValueMap[contextType](context);
+  }
+  const key = Symbol();
+  context[key] = this;
+  const r = context[key](...args);
+  delete context[key];
+  return r;
+};
+```
