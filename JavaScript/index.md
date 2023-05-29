@@ -691,3 +691,26 @@ console.log(JSON.parse(JSON.stringify(testc))); // 忽略不可枚举的键, sym
 主要是处理 怎么存储对应的事件, 怎么去触发对应的事件
 
 EventBus 应该有这么几个方法 `on`, `emit`, `off` 这三个是最基本的
+
+### carrying
+
+只传递给函数一部分参数来调用它，让它返回一个函数去处理剩下的参数
+
+涉及到知识点两个
+
+1. arguments.length 是调用函数时传入的参数数量
+2. function.length 是定义函数时 需要的形参数量
+
+```js
+function carrying(func) {
+  return function carried(...args) {
+    if (arg1.length >= func.length) {
+      return fun.apply(this, arg1);
+    } else {
+      return function (...args2) {
+        return carried.apply(this, [...args, ...args2]);
+      };
+    }
+  };
+}
+```
