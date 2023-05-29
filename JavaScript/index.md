@@ -753,3 +753,27 @@ JavaScript 最早是用于写网页交互逻辑的, 为了避免多线程处理 
       2. 清空 宏任务队列后, 又会接着去检查 任务队列中是否存在任务, 以此往复
 
 这里推荐个[网站](http://latentflip.com/loupe/) 可以查看怎么进出队列的
+
+### 并发控制
+
+```js
+function concurrencyLimit(tasks, max) {
+  const result = [];
+  const pendingTasks = [];
+  for (let i = 0; i < tasks.length; i++) {
+    // 这里其实如果 task[i] 已经是一个 promise 我们没必要包这一层 我这里举的例子 tasks[1, 2 ,3,4]
+    const task = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(task[i]);
+      }, (i + 1) * 1000);
+    });
+    result.push(task);
+    pendingTasks.push(task);
+    task.then(() => pendingTasks.splice(pendingTasks.indexOf(task), 1));
+    if (pendingTasks.length === max) {
+      await Promise.race(pendingTasks)
+    }
+  }
+  return Promise.all(result);
+}
+```
