@@ -714,3 +714,23 @@ function carrying(func) {
   };
 }
 ```
+
+### 实现 instanceof
+
+主要的思路就是 判断 `instance.**proto** === Func.prototype`;
+
+```js
+function MyInstanceof(instance, Func) {
+  let proto = instance.__proto__;
+  const prototype = Func.prototype;
+  while (true) {
+    if (proto === null) {
+      return false;
+    }
+    if (prototype === proto) {
+      return true;
+    }
+    proto = proto.__proto__;
+  }
+}
+```

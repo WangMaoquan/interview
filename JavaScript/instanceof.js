@@ -1,7 +1,25 @@
+/**
+ * 主要的思路就是 比对 instance.__proto__ 是否是 === Func.prototype
+ */
+
+function myInstanceOf(instance, Func) {
+  let proto = instance.__proto__;
+  let prototype = Func.prototype;
+  while (true) {
+    if (proto === null) {
+      return false;
+    }
+    if (proto === prototype) {
+      return true;
+    }
+    proto = proto.__proto__;
+  }
+}
+
 // instanceof 判断数据类型
 
 const instanceofFn = (target, contructor) => {
-  return target instanceof contructor;
+  return myInstanceOf(target, contructor);
 };
 
 let str = '123';
