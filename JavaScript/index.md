@@ -777,3 +777,12 @@ function concurrencyLimit(tasks, max) {
   return Promise.all(result);
 }
 ```
+
+### 图片懒加载
+
+其实思路很简单就是 图片是否已经进入`可视区域`
+
+什么是 `可视区域`, 我的理解就是浏览器中 网页的主体那块
+
+所以 当 图片的 top 已经比 document.documentElement.clientHeight 小, 同时保证 top > 0
+或者 图片的 bottom 已经比 document.documentElement.clientHeight 小, 同时保证 bottom > 0
